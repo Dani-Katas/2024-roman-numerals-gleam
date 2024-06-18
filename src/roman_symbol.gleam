@@ -14,40 +14,35 @@ pub type RomanSymbol {
 pub const symbols = [M, D, C, L, X, V, I]
 
 pub fn from(number: Int) -> List(RomanSymbol) {
-  from_two(number, M)
+  from_arabic_to(number, M)
 }
 
-fn from_two(number: Int, symbol: RomanSymbol) -> List(RomanSymbol) {
+fn from_arabic_to(number: Int, symbol: RomanSymbol) -> List(RomanSymbol) {
   let value = to_value(symbol)
-  case number {
-    _ if symbol == I -> I |> list.repeat(number)
-    _ if number >= value -> [
-      symbol,
-      ..from(number - to_value(symbol))
-    ]
-    _ -> {
-      let subtractive = subtractive_pair(symbol)
-      let subtract_value = to_value(symbol) - to_value(subtractive)
-      let can_subtract = number >= subtract_value
+  let subtractive = subtractive_pair(symbol)
+  let subtract_value = value - to_value(subtractive)
+  let can_subtract = number >= subtract_value
 
-      case can_subtract {
-        True -> [
-          subtractive,
-          symbol,
-          ..from(number - subtract_value)
-        ]
-        False -> from_two(number, next(symbol))
-      }
-    }
+  case symbol {
+    I -> I |> list.repeat(number)
+    _ if number >= value -> [symbol, ..from(number - value)]
+    _ if can_subtract -> [subtractive, symbol, ..from(number - subtract_value)]
+    _ -> from_arabic_to(number, next(symbol))
   }
 }
 
 fn subtractive_pair(symbol: RomanSymbol) -> RomanSymbol {
   symbols
-    |> list.filter(can_be_subtracted)
-    |> list.filter(fn (x) { to_value(x) < to_value(symbol) })
-    |> list.first
-    |> result.unwrap(I)
+  |> list.filter(can_be_subtracted)
+  |> list.filter(is_less_than(symbol))
+  |> list.first
+  |> result.unwrap(I)
+}
+
+pub fn is_less_than(a: RomanSymbol) {
+  fn(b: RomanSymbol) {
+    to_value(b) < to_value(a)
+  }
 }
 
 fn can_be_subtracted(symbol: RomanSymbol) -> Bool {
