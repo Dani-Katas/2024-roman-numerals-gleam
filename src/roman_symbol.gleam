@@ -1,3 +1,5 @@
+import gleam/list
+
 pub type RomanSymbol {
   M
   D
@@ -9,6 +11,10 @@ pub type RomanSymbol {
 }
 
 pub const symbols = [M, D, C, L, X, V, I]
+
+pub fn from(number: Int) {
+  I |> list.repeat(times: number)
+}
 
 pub fn to_string(symbol: RomanSymbol) {
   case symbol {
