@@ -24,5 +24,9 @@ fn read_romans() {
     |> string.split("\n")
     |> list.drop(1)
     |> list.map(fn(x) { string.split(x, ",") })
-    |> list.map(fn(row) { #(row |> list.first |> result.unwrap("1") |> int.parse |> result.unwrap(1), row |> list.last |> result.unwrap("1")) })
+    |> list.map(row_to_tuple)
+}
+
+fn row_to_tuple(row: List(String)) {
+  #(row |> list.first |> result.unwrap("1") |> int.parse |> result.unwrap(1), row |> list.last |> result.unwrap("1"))
 }

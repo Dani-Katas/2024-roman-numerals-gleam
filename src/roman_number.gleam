@@ -12,5 +12,5 @@ pub fn from(number: Int) {
 }
 
 pub fn to_string(roman_number: RomanNumber) {
-    roman_number.digits |> list.map(fn(x) { roman_symbol.to_string(x) }) |> string.join("")
+    roman_number.digits |> list.map(roman_symbol.to_string) |> string.join("")
 }
