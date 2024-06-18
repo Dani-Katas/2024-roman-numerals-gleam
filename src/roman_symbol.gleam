@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/result
 
 pub type RomanSymbol {
   M
@@ -12,21 +13,59 @@ pub type RomanSymbol {
 
 pub const symbols = [M, D, C, L, X, V, I]
 
-pub fn from(number: Int) {
+pub fn from(number: Int) -> List(RomanSymbol) {
+  from_two(number, M)
+}
+
+fn from_two(number: Int, symbol: RomanSymbol) -> List(RomanSymbol) {
+  let value = to_value(symbol)
   case number {
-    _ if number >= 1000 -> [M, ..from(number - 1000)]
-    _ if number >= 900 -> [C, M, ..from(number - 900)]
-    _ if number >= 500 -> [D, ..from(number - 500)]
-    _ if number >= 400 -> [C, D, ..from(number - 400)]
-    _ if number >= 100 -> [C, ..from(number - 100)]
-    _ if number >= 90 -> [X, C, ..from(number - 90)]
-    _ if number >= 50 -> [L, ..from(number - 50)]
-    _ if number >= 40 -> [X, L, ..from(number - 40)]
-    _ if number >= 10 -> [X, ..from(number - 10)]
-    _ if number >= 9 -> [I, X, ..from(number - 9)]
-    _ if number >= 5 -> [V, ..from(number - 5)]
-    _ if number >= 4 -> [I, V, ..from(number - 4)]
-    _ -> I |> list.repeat(times: number)
+    _ if symbol == I -> I |> list.repeat(number)
+    _ if number >= value -> [
+      symbol,
+      ..from(number - to_value(symbol))
+    ]
+    _ -> {
+      let subtractive = subtractive_pair(symbol)
+      let subtract_value = to_value(symbol) - to_value(subtractive)
+      let can_subtract = number >= subtract_value
+
+      case can_subtract {
+        True -> [
+          subtractive,
+          symbol,
+          ..from(number - subtract_value)
+        ]
+        False -> from_two(number, next(symbol))
+      }
+    }
+  }
+}
+
+fn subtractive_pair(symbol: RomanSymbol) -> RomanSymbol {
+  symbols
+    |> list.filter(can_be_subtracted)
+    |> list.filter(fn (x) { to_value(x) < to_value(symbol) })
+    |> list.first
+    |> result.unwrap(I)
+}
+
+fn can_be_subtracted(symbol: RomanSymbol) -> Bool {
+  case symbol {
+    I | X | C -> True
+    _ -> False
+  }
+}
+
+fn next(symbol: RomanSymbol) -> RomanSymbol {
+  case symbol {
+    M -> D
+    D -> C
+    C -> L
+    L -> X
+    X -> V
+    V -> I
+    I -> I
   }
 }
 
