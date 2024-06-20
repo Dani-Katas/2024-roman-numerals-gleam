@@ -14,21 +14,35 @@ pub type RomanSymbol {
 pub const symbols = [M, D, C, L, X, V, I]
 
 pub fn from(number: Int) -> List(RomanSymbol) {
-  from_arabic_to(number, M)
+  to_roman(number, symbols)
 }
 
-fn from_arabic_to(number: Int, symbol: RomanSymbol) -> List(RomanSymbol) {
-  let value = to_value(symbol)
-  let subtractive = subtractive_pair(symbol)
-  let subtract_value = value - to_value(subtractive)
-  let can_subtract = number >= subtract_value
-
-  case symbol {
-    I -> I |> list.repeat(number)
-    _ if number >= value -> [symbol, ..from(number - value)]
-    _ if can_subtract -> [subtractive, symbol, ..from(number - subtract_value)]
-    _ -> from_arabic_to(number, next(symbol))
+fn to_roman(number: Int, symbols: List(RomanSymbol)) -> List(RomanSymbol) {
+  case symbols {
+    [I] -> I |> list.repeat(number)
+    [symbol, ..symbols] -> non_unit_to_roman(number, symbol, symbols)
+    _ -> []
   }
+}
+
+fn non_unit_to_roman(number: Int, symbol: RomanSymbol, symbols: List(RomanSymbol)) -> List(RomanSymbol) {
+  case number |> greater_than(_, symbol), has_subtractive_pair(number, symbol) {
+    True, _ -> [symbol, ..from(number - to_value(symbol))]
+    _, True -> [subtractive_pair(symbol), symbol, ..from(number - subtractive_pair_delta(symbol))]
+    _, _ -> to_roman(number, symbols)
+  }
+}
+
+fn greater_than(number: Int, symbol: RomanSymbol) -> Bool {
+  number >= to_value(symbol)
+}
+
+fn subtractive_pair_value(symbol: RomanSymbol) -> Int {
+  symbol |> subtractive_pair |> to_value
+}
+
+fn has_subtractive_pair(number: Int, symbol: RomanSymbol) -> Bool {
+  number >= subtractive_pair_delta(symbol)
 }
 
 fn subtractive_pair(symbol: RomanSymbol) -> RomanSymbol {
@@ -37,6 +51,10 @@ fn subtractive_pair(symbol: RomanSymbol) -> RomanSymbol {
   |> list.filter(is_less_than(symbol))
   |> list.first
   |> result.unwrap(I)
+}
+
+fn subtractive_pair_delta(symbol: RomanSymbol) -> Int {
+  to_value(symbol) - subtractive_pair_value(symbol)
 }
 
 pub fn is_less_than(a: RomanSymbol) {
@@ -49,18 +67,6 @@ fn can_be_subtracted(symbol: RomanSymbol) -> Bool {
   case symbol {
     I | X | C -> True
     _ -> False
-  }
-}
-
-fn next(symbol: RomanSymbol) -> RomanSymbol {
-  case symbol {
-    M -> D
-    D -> C
-    C -> L
-    L -> X
-    X -> V
-    V -> I
-    I -> I
   }
 }
 
