@@ -25,10 +25,18 @@ fn to_roman(number: Int, symbols: List(RomanSymbol)) -> List(RomanSymbol) {
   }
 }
 
-fn non_unit_to_roman(number: Int, symbol: RomanSymbol, symbols: List(RomanSymbol)) -> List(RomanSymbol) {
-  case number |> greater_than(_, symbol), has_subtractive_pair(number, symbol) {
+fn non_unit_to_roman(
+  number: Int,
+  symbol: RomanSymbol,
+  symbols: List(RomanSymbol),
+) -> List(RomanSymbol) {
+  case number |> greater_than(symbol), has_subtractive_pair(number, symbol) {
     True, _ -> [symbol, ..from(number - to_value(symbol))]
-    _, True -> [subtractive_pair(symbol), symbol, ..from(number - subtractive_pair_delta(symbol))]
+    _, True -> [
+      subtractive_pair(symbol),
+      symbol,
+      ..from(number - subtractive_pair_delta(symbol))
+    ]
     _, _ -> to_roman(number, symbols)
   }
 }
@@ -58,9 +66,7 @@ fn subtractive_pair_delta(symbol: RomanSymbol) -> Int {
 }
 
 pub fn is_less_than(a: RomanSymbol) {
-  fn(b: RomanSymbol) {
-    to_value(b) < to_value(a)
-  }
+  fn(b: RomanSymbol) { to_value(b) < to_value(a) }
 }
 
 fn can_be_subtracted(symbol: RomanSymbol) -> Bool {
